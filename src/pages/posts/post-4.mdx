@@ -1,0 +1,80 @@
+---
+layout: ../../layouts/PostLayout.astro
+title: "Understanding Reflexion Agent"
+description: "A detailed explanation of how Reflexion agent works and its differences from Reflection Agent"
+pubDate: 2024-03-24
+---
+
+# Reflexion Agents
+<br/>
+
+<img src="/reflexion.png" width="700"/>
+
+
+#### Reflexion  agent is different from [[Reflection Agent]] agent:
+
+1. Reflexion has a **responder** node that generates an Initial response
+2. This response has critique and search terms which are then searched for more relevant content
+3. This response then goes into **Revisor**, which then generates another response which does more execution of tools(search) and then again goes into the **revisor**
+4. This **revisor** loops until we have a satisfactory response(what is a satisfactory response???) 
+
+
+## Code 
+
+```python
+from langgraph.graph import END, MessageGraph
+
+MAX_ITERATIONS = 5
+builder = MessageGraph()
+builder.add_node("draft", first_responder.respond)
+builder.add_node("execute_tools", execute_tools)
+builder.add_node("revise", revisor.respond)
+# draft -> execute_tools
+builder.add_edge("draft", "execute_tools")
+# execute_tools -> revise
+builder.add_edge("execute_tools", "revise")
+
+# Define looping logic:
+def event_loop(state: List[BaseMessage]) -> str:
+    # in our case, we'll just stop after N plans
+    num_iterations = _get_num_iterations(state)
+    if num_iterations > MAX_ITERATIONS:
+        return END
+    return "execute_tools"
+
+
+# revise -> execute_tools OR end
+builder.add_conditional_edges("revise", event_loop)
+builder.set_entry_point("draft")
+graph = builder.compile()
+
+
+```
+
+This agent can effectively use explicit reflections and web-based citations to improve the quality of the final response. It only pursues one fixed trajectory, however, so if it makes a misstep, that error can impact subsequent decisions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
